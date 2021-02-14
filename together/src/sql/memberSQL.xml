@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+   <mapper namespace="member">
+  
+  	<insert id="insertMember" parameterType="memberDTO">
+  		insert into member values(#{id},1,0,0,1,#{name},#{pw},#{birth},#{gender},#{email},#{tel},#{hobby1},#{hobby2},#{hobby3},#{img},sysdate)
+  	</insert>
+  	
+  	<select id="idCheck" parameterType="String" resultType="boolean">
+  		select count(*) from member where id=#{value}
+  	</select>
+  	
+  	<select id="idPwCheck" parameterType="memberDTO" resultType="int" >
+  		select count(*) from member where id=#{id} and pw=#{pw} 
+  	</select>
+  	
+  	<select id="selectMember" parameterType="String" resultType="memberDTO">
+  		select * from member where id=#{value}
+  	</select>
+  	
+  	<update id="updateMember" parameterType="memberDTO">
+  		update member set pw=#{pw}, tel=#{tel}, hobby1=#{hobby1}, hobby2=#{hobby2}, hobby3=#{hobby3}<if test="img != null">, img=#{img}</if> where id=#{id}
+  	</update>
+  	
+  	<select id="pwConfirm" parameterType="HashMap" resultType="boolean">
+  		select count(*) from member where id=#{id} and pw=#{pw}
+  	</select>
+  	
+  	<select id="choiceList" parameterType="hashmap" resultType="hashmap">
+  	<![CDATA[
+  		SELECT * FROM (SELECT a.*, rownum r FROM (SELECT bm.*, ch.list_num FROM BOARD_MAP bm, 
+  		(SELECT * FROM CHOICE WHERE id=#{id}) ch WHERE ch.list_num  = bm.MAP_NUM ) a ORDER BY a.reg DESC) where r >= #{startRow} and r <= #{endRow}
+  	]]>
+  	</select>
+  
+  	<select id="myChoiceCount" parameterType="string" resultType="int">
+  		select count(*) from choice where id=#{value}
+  	</select>
+  	
+  	<select id="searchChoiceList" parameterType="hashmap" resultType="hashmap">
+  	<![CDATA[
+  		SELECT * FROM (SELECT a.*, rownum r FROM (SELECT bm.*, ch.list_num FROM BOARD_MAP bm, 
+  		(SELECT * FROM CHOICE WHERE id=#{id}) ch WHERE bm.${sel} like '%' ||#{search}|| '%' AND ch.list_num  = bm.MAP_NUM ) a ORDER BY a.reg DESC) where r >= #{startRow} and r <= #{endRow}
+  	]]>
+  	</select> 
+  	
+  	<select id="myChoiceSearchCount" parameterType="hashmap" resultType="int">
+  	<![CDATA[
+  		select count(*) from (SELECT bm.*, ch.list_num FROM BOARD_MAP bm, (SELECT * FROM CHOICE WHERE id=#{id}) ch WHERE ch.list_num = bm.MAP_NUM) where ${sel} like '%' ||#{search}|| '%' 
+  	]]>
+  	</select>
+  
+  	<select id="reviewList" parameterType="string" resultType="hashmap">
+  		select * from review where commend_id=#{value}
+  	</select>
+  
+  	<select id="allMapList" parameterType="string" resultType="hashmap">
+  		SELECT bm.* FROM BOARD_MAP bm , (SELECT * FROM PPL_AVAIL WHERE ID =#{value} AND JOIN_STATUS = 1) ppl WHERE bm.map_num = ppl.map_num order by start_date
+  	</select>
+  	
+  	<select id="allMapCount" parameterType="string" resultType="int">
+  		SELECT count(*) FROM BOARD_MAP bm , (SELECT * FROM PPL_AVAIL WHERE ID =#{value} AND JOIN_STATUS = 1) ppl WHERE bm.map_num = ppl.map_num order by start_date
+  	</select>
+  	
+ 	<select id="allMapSearchList" parameterType="hashmap" resultType="hashmap">
+  	<![CDATA[
+  		SELECT * FROM (SELECT bm.* FROM BOARD_MAP bm , (SELECT * FROM PPL_AVAIL WHERE ID =#{id} AND JOIN_STATUS = 1) ppl WHERE bm.map_num = ppl.map_num) WHERE ${sel} like '%' ||#{search}|| '%' order by start_date desc
+  	]]>
+  	</select>
+  	<select id="allMapSearchCount" parameterType="hashmap" resultType="int">
+  	<![CDATA[
+  		SELECT count(*) FROM (SELECT bm.* FROM BOARD_MAP bm , (SELECT * FROM PPL_AVAIL WHERE ID =#{id} AND JOIN_STATUS = 1) ppl WHERE bm.map_num = ppl.map_num) WHERE ${sel} like '%' ||#{search}|| '%'
+  	]]>
+
+  	</select>
+  	
+  	<select id="history_pplJoin" parameterType="string" resultType="memberDTO">
+  		SELECT m.* FROM MEMBER m, (SELECT id FROM PPL_AVAIL WHERE MAP_NUM = #{value} AND JOIN_STATUS = 1) ppl WHERE m.ID = ppl.id
+  	</select>
+  	
+  	<insert id="insertReview" parameterType="hashmap">
+  		insert into review values(review_seq.nextVal, #{memId}, #{reviewId}, #{review}, #{val})
+  	</insert>
+  	
+  	<select id="getLikes" parameterType="string" resultType="int">
+  		select likes from member where id=#{value}
+  	</select>
+  	
+  	<update id="likes" parameterType="string">
+		update member set likes=likes+1 where id=#{value}
+	</update>
+  	
+	<update id="grade" parameterType="string">
+		update member set grade=grade+1 where id=#{value}
+	</update>
+	
+	<select id="myArticleCount" parameterType="hashmap" resultType="int">
+		select count(*) from (select * from board where id=#{id})
+  		<if test="sel==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="sel==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="sel==1">
+ 			where sel=1
+ 		</if>
+	</select>
+	
+	<select id="myArticles" parameterType="hashmap" resultType="boardDTO">
+		select B.* from <![CDATA[ (select A.*, rownum r from (select * from board where id=#{id} order by reg desc)A]]>
+ 		<if test="sel==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="sel==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="sel==1">
+ 			where sel=1
+ 		</if>
+		<![CDATA[)B
+		where r >= #{start} and r <= #{end} order by reg desc ]]>
+  	</select>  
+  	
+  	<select id="blackList" parameterType="string" resultType="blackDTO">
+  		select * from black where id=#{id}
+  	</select>
+  	
+  	<select id="getBlackcnt" parameterType="string" resultType="int">
+  		select count(*) from black where id=#{id}
+  	</select>
+  	
+  	<insert id="black" parameterType="hashmap">
+  		insert into black values(black_seq.nextVal, #{memId}, #{id})
+  	</insert>
+  	
+  	<delete id="unblock" parameterType="hashmap">
+  		delete from black where id=#{id} and black_id=#{block_id}
+  	</delete>
+  </mapper>

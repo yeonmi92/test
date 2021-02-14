@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">  
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+
+	<!-- 콘솔 로그 -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%p] [%d{yyyy-MM-dd HH:mm:ss}] [%c{1}] [%L] [%p] %m %n"/>
+		</layout>
+	</appender>
+	<!-- webapp.root는 web.xml에 설정해놓았다. -->
+	<!-- append는 이어서 계속 저장하게끔.... -->
+	<!-- DatePattern은 날짜 패턴은 어떻게 쓸건지 -->
+	<appender name="rollingFile" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${webapp.root}/WEB-INF/log/rolling.log"/>
+		<param name="Append" value="true"/>
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%p] [%d{yyyy-MM-dd HH:mm:ss}] [%c{1}] [%L] [%p] %m %n"/>
+		</layout>
+	</appender>
+	
+	<!-- 에러만 파일 저장 -->
+	<appender name="errFile" class="org.apache.log4j.DailyRollolingFileAppender">
+		<param name="Threshold" value="ERROR"/>
+		<param name="File" value="${webapp.root}/WEB-INF/log/error.log"/>
+		<param name="Append" value="true"/>
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%p] [%d{yyyy-MM-dd HH:mm:ss}] [%c{1}] [%L] [%p] %m %n"/>
+		</layout>
+	</appender>
+	
+	<!-- 특정 크기마다 백업하며 파일 저장 -->
+	<appender name="errFile" class="org.apache.log4j.DailyRollolingFileAppender">
+		<param name="Threshold" value="ERROR"/>
+		<param name="File" value="${webapp.root}/WEB-INF/log/log.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="1MB"/>
+		<param name="MaxBackupIndex" value="1"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%p] [%d{yyyy-MM-dd HH:mm:ss}] [%c{1}] [%L] [%p] %m %n"/>
+		</layout>
+	</appender>
+	
+	<!-- 특정 패키지 로그 출력 설정하기 -->
+	<logger name="org.springframework.core">
+		<level value="INFO"/>
+	</logger>
+	<logger name="org.springframework.beans">
+		<level value="INFO"/>
+	</logger>
+	<logger name="org.springframework.context">
+		<level value="INFO"/>
+	</logger>
+	<logger name="org.springframework.web">
+		<level value="INFO"/>
+	</logger>
+	
+	<!-- SQL 쿼리 문장 (spring-servlet에 SQL 로그 설정해놓음)-->
+	<logger name="jdbc.sqlonly">
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+	</logger>
+	
+	<!-- root설정을 해놓으면 기본적으로 찍히는 로그들은 나옴. FATAL, DEBUG 등 지정도 가능하다. -->
+	
+
+	<!--  루트 설정 : 모든 로거가 상솔할 수 있는 루트 로거
+		레벨로 로그레벨 지정
+		appender-ref : appender 참조
+	 -->
+	<root>
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+		<appender-ref ref="rollingFile"/>
+	</root>
+	<!-- appender name을 <root> <appender-ref>에 넣는다. -->
+</log4j:configuration>
+

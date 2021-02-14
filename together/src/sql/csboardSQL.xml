@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="csboard">
+	<!-- csboard 게시판 글 전체 개수 -->
+	<select id="countAll" resultType="int" parameterType="int">
+		select count(*) from csboard where sel=#{sel}	
+	</select>
+	
+	<!-- csboard 게시판 리스트 -->
+	<select id="csList" resultType="csboardDTO">
+		select cs_num,sel,subject,id,content,reply,status,reg,readcount from csboard order by reg desc
+	</select>
+	
+	<!-- csboard 게시판 글 전체 -->
+	<select id="selectAll" parameterType="hashmap" resultType="csboardDTO">
+		<![CDATA[
+		select cs_num, sel, subject, id, content, reply, status, reg, readcount,r 
+		from (select cs_num, sel, subject, id, content, reply, status, reg, readcount,rownum r 
+		from (select cs_num, sel, subject, id, content, reply, status, reg, readcount from csboard where sel=#{sel} order by reg desc)
+		)where r >= #{start} and r <= #{end} order by reg desc
+		]]>
+	</select>	
+	
+	<!-- csboard 게시판 검색 개수 -->
+	<select id="getSearchArticleCount" parameterType="hashmap" resultType="int">
+		select count(*) from csboard where ${type} like '%'||#{search}||'%'
+	</select>
+	
+	<!-- csboard 게시판 검색 결과 -->
+	<select id="getSearchArticles" parameterType="hashmap" resultType="csboardDTO">
+		<![CDATA[
+		select cs_num,sel,subject,id,content,reply,status,reg,readcount,r 
+		from (select cs_num,sel,subject,id,content,reply,status,reg,readcount,rownum r 
+		from (select * from csboard where ${type} like '%'||#{search}||'%'
+		order by reg desc) order by reg desc) where r >= #{start} and r <= #{end}
+		]]>
+	</select>
+	
+	<!-- csboard 게시판 글 작성 -->
+	<insert id="insertCs" parameterType="csboardDTO">
+		insert into csboard(cs_num,sel,subject,id,content,reg) values(csboard_seq.nextVal,#{sel},#{subject},#{id},#{content},sysdate)
+	</insert>
+	
+	<!-- csboard 게시판 글 한개 -->
+	<select id="selectOne" parameterType="int" resultType="csboardDTO">
+		select * from csboard where cs_num=#{value}
+	</select>
+	
+	<!-- csboard 게시판 글 수정 -->
+	<update id="updateOne" parameterType="csboardDTO">
+		update csboard set subject=#{subject}, content=#{content} where cs_num=#{cs_num}
+	</update>
+	
+	<!-- csboard 게시판 글 삭제 -->
+	<delete id="deleteCs" parameterType="int">
+		delete from csboard where cs_num=#{cs_num}
+	</delete>	
+
+	<!-- csboard 댓글 -->
+	<update id="reply" parameterType="hashmap">
+		<![CDATA[
+		update csboard set reply=#{reply}, status=1 where cs_num=#{cs_num}
+		]]>
+	</update>
+	
+	<!-- csboard 게시판 조회수 -->
+	<update id="readcountCs" parameterType="int">
+		update csboard set readcount=readcount+1 where cs_num=#{cs_num}
+	</update>
+</mapper>

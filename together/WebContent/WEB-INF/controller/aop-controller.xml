@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.3.xsd" 
+>
+	<context:component-scan base-package="admin.controller.bean"/>
+	<context:component-scan base-package="board.controller.bean"/>
+	<context:component-scan base-package="csboard.controller.bean"/>
+	<context:component-scan base-package="map.controller.bean"/>
+	<context:component-scan base-package="member.controller.bean"/>
+	<context:component-scan base-package="report.controller.bean"/>
+
+	<!-- 4. AOP 어노테이션으로 작업할 Aspect 클래스 빈으로 추가 -->
+	<bean id="adminAspect" class="admin.controller.bean.AdminAspect"/>
+	<bean id="boardAspect" class="board.controller.bean.BoardAspect"/>
+	<bean id="mapAspect" class="map.controller.bean.MapAspect"/>
+	<bean id="memberAspect" class="member.controller.bean.MemberAspect"/>
+	<bean id="reportAspect" class="report.controller.bean.ReportAspect"/>
+	<bean id="csboardAspect" class="csboard.controller.bean.CsBoardAspect"/>
+
+	<!-- @Aspect 어노테이션으로 설정된 빈 객체를 Aspect로 사용하게 해주는 태그 -->
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+</beans>

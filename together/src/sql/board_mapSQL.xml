@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace ="board_map">
+  
+  	<insert id ="insertMap" parameterType="mapboardDTO">
+  		insert into board_map(map_num,id,title,addr,lat,lng,reg,times,start_date,end_date,ppl_num,gender,age,cost,hobby,detail,ppl_join)
+		values(board_map_seq.nextVal,#{id},#{title},#{addr},#{lat},#{lng},sysdate,#{times},#{start_date},#{end_date},#{ppl_num},#{gender},#{age},#{cost},#{hobby},#{detail},#{id}) 
+  	
+  	</insert>
+  	
+  	<update id = "updateOne" parameterType="mapboardDTO">
+  		update board_map set title =#{title},addr=#{addr},lat=#{lat},lng=#{lng},times =#{times},start_date=#{start_date},end_date=#{end_date},ppl_num=#{ppl_num},gender=#{gender},age=#{age},cost=#{cost},hobby=#{hobby},detail =#{detail}
+  		where map_num =#{map_num}
+  	</update>
+  	
+  	<select id="selectOne" parameterType="int" resultType="mapboardDTO">
+  		select * from board_map where map_num = #{value}
+  	</select>
+  	
+  	<select id ="selectAll" resultType="hashmap">
+  		select * from board_map
+  	</select>
+  	
+  	 <select id ="choiceCheck" parameterType ="hashmap" resultType ="int">
+  		select count(*) from choice where list_num = #{checkNum} and id = #{checkId}
+  	</select>
+    
+    <select id = "insertId" parameterType="hashmap">
+  	 	insert into choice values(choice_seq.nextVal,#{id},#{map_num})
+  	</select>
+	
+	<select id ="choiceDelete" parameterType="hashmap">
+		delete from choice where id =#{id} and list_num =#{map_num}
+	</select>
+  	
+  	<select id = "deleteMap" parameterType ="int">
+  		delete from board_map where map_num =#{map_num}
+  	</select>
+  	
+  	<select id = "applyCheck" parameterType="hashMap" resultType="int">
+  		select count(*) from ppl_avail where map_num =#{applyNum} and id =#{applyId}
+  	</select>
+  	
+  	<select id = "applyInsert" parameterType ="hashMap">
+  		insert into ppl_avail(map_num, id) values(#{map_num},#{id})
+  	</select>
+  	
+  	<select id = "applyDelete" parameterType ="hashmap">
+  		delete from ppl_avail where id =#{id} and map_num =#{map_num}
+  	</select>
+  	
+  	<select id = "getMember" parameterType = "MemberDTO" resultType ="hashMap">
+  		 select m.*,ppl.join_status FROM "MEMBER" m,(SELECT id,join_status FROM PPL_AVAIL WHERE map_num = #{value}) ppl WHERE m.id= ppl.id
+  	</select>
+  	
+  	<update id="joinMember" parameterType="hashMap">
+  		update ppl_avail set join_status=1 where id =#{id} and map_num =#{map_num}
+  		
+  	
+  	</update>
+  	
+  	
+  	
+  	
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  </mapper>
+  
+  

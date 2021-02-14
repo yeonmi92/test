@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="map">
+	 <select id="getAllLatLlng" resultType="mapboardDTO">
+	 	select * from board_map
+	 </select>
+	 
+	 <select id="getSearchMap" parameterType="hashmap" resultType="mapboardDTO">
+	 	select * from board_map where ${sel} like '%' ||#{search}|| '%'
+	 </select>
+	 
+	 <select id="getAllMap" resultType="mapboardDTO">
+	 	select * from board_map
+	 </select>
+	 
+	 <select id="getMapBoard" resultType="hashmap">
+	 <![CDATA[
+	 	select * from (select map.*, rownum r from (select * from board_map order by reg desc) map) where r < 6
+	 ]]>
+	 </select>
+	  <select id="getBoard" resultType="hashmap">
+	 <![CDATA[
+	 	select * from (select bl.*, rownum r from (select * from board where sel = 1 order by reg desc) bl) where r < 6
+	 ]]>
+	 </select>
+	 
+	 <select id="allMapBoard" parameterType="string" resultType="hashmap">
+	 <![CDATA[
+	 	SELECT bm.* FROM BOARD_MAP bm , (SELECT * FROM PPL_AVAIL WHERE ID=#{value} AND JOIN_STATUS=1) ppl WHERE bm.MAP_NUM = ppl.map_num AND  bm.END_DATE >= SYSDATE
+	 ]]>
+	 </select>
+ </mapper>

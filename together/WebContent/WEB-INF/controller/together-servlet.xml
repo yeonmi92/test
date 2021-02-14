@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:websocket="http://www.springframework.org/schema/websocket" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd"
+>
+
+	
+	<!-- test.spring.bean 에 있는 파일 중 @Controller가 있는 파일 전부를 스캔하겠다! 
+		경로 확장 가능. test.spring~~ 으로 시작되는 패키지 모두 스캔 가능
+	-->
+	
+	<context:component-scan base-package="admin"/>
+	<context:component-scan base-package="map"/>
+	<context:component-scan base-package="report"/>
+	
+	
+	
+	<!-- 다운로드 실행할 빈클래스 세팅: 파일이 다운 되도록 연결 로직 세팅 -->
+<!-- 	<bean id="fileDown" class="test.spring.bean.DownloadView"/> -->
+	
+	<bean class = "org.springframework.web.servlet.view.BeanNameViewResolver">
+	 	<property name="order" value ="0"/>
+	 </bean>
+
+
+	<!--  view의 이름 처리 -->
+	<!-- 다운로드빼문에 우선순위가 뒤로 밀려남. viewResolver 자체가 빠르기때문에 우선순위를 지정해 놔야 함.  -->
+	<bean id = "viewResolver" class= "org.springframework.web.servlet.view.InternalResourceViewResolver" >
+		<property name="prefix" value ="/WEB-INF/views/"/>
+		<property name="suffix" value =".jsp"/>
+		<property name="order" value = "2"/>
+	</bean>
+
+		<!-- Tiles 뷰 리졸버 -->
+	<bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView" />
+		<property name="order" value="1" />
+	</bean>
+
+	
+	<!-- Tiles 설정 파일 -->
+	<bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+		<property name="definitions">
+			<list>
+				<value>/WEB-INF/tiles/tiles.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 파일 업로드  --> 
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="-1"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+
+	<!-- DB 세팅 0819 -->
+	<!-- dataSource
+		destroy-method: bean 객체의 스코프가 끝났을 경우(접속이 끝났을 경우)
+						class 속성에 선언한 클래스의 close 메서드를 호출
+	 -->
+	<bean id="dataSourceSpied" class="org.apache.commons.dbcp2.BasicDataSource"
+		destroy-method="close"
+		p:driverClassName="oracle.jdbc.driver.OracleDriver"
+		p:url="jdbc:oracle:thin:@nullmaster.iptime.org:3000:ORCL"
+		p:username="global02"
+		p:password="global02"
+	/>
+	<bean id="dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		<constructor-arg ref="dataSourceSpied"/>
+		<property name="logFormatter">
+			<bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+				<property name="loggingType" value="MULTI_LINE"/>
+				<property name="sqlPrefix" value="SQL : "/>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- property name 위에 있는 dataSource로 꼭 맞춰주기!  -->
+	<!-- configLocation 이름 맞춰주고 value에 mybatis 경로 넣어주기 
+		mybatis-config에 mapper의 위치와 type alias의 정보가 들어있음
+		mapper 와 tyep alias의 정보는 mybatis-config.xml에 넣어줄 예정.
+		sqlSession==Connection+DAO 라고 생각하면 됨.
+		Connection 임과 동시에 DAO를 사용하는 방식으로 사용됨.
+	-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="/WEB-INF/mybatis/mybatis-config.xml"/>
+	</bean>
+	
+	<!-- 위에 있는 sqlSessionFactory와 연결시켜줌 -->
+	<!-- claerCache가 mybatis의 장점 중 하나!
+			=> jsp와 같은 프레임 워크는 기존 커넥션과 연결할때마다 동작. 
+				mybatis는 temp에 클라이언트에대한 정보를 저장을 해놓음.
+				다음에 또 연결할때 바로 설정 가능하게끔 해줌.
+				최초에 접속했을때 풀에 정보를 저장해놓음. 작업이 끝났으면 리턴 해주고, 또 필요로 할때
+				풀로 가지 않고 바로 temp로 가서 사용자 정보를 가져와서 기존 정보로 연결해서 실행 속도가 빠름.
+				대용량 처리를 할때 유용함.
+				clearCache? 완전히 사용이 끝났을 때(세션이 끝났을때) 저장해놓은 정보를 완전히 삭제해줌.
+				만약, clearCache를 안해주면 그 전에 썼던 sql문으로 정보가 들어간다.
+		sqlSession은 sql을 날릴때 필요. 스레드 하나당 sql이 하나가 필요.
+		
+	 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="clearCache">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"/>
+	</bean>
+	<!-- 
+		destroy-method="clearCache"이 필요없을때 : 모든 사람들에게서 똑같은 정보를 가져올때
+		sqlSession을 분리해줘서 사용할 수 있다. 한번 실행했을때 쿼리문 날려서 캐싱해주고
+		똑같은 정보를 계속 처리해준다. 하지만, 이런 상황을 제외하면 굳이 캐시를 살릴 필요가 없다.
+	-->
+	
+	
+	
+</beans>

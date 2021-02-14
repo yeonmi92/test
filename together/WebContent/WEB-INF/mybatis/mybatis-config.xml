@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+  <configuration>
+
+	<!-- 
+		local 캐싱 해제
+		<setting name="cacheEnable" value="false"/>
+		<setting name="localCacheScope" value="STATEMENT"/>	 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+
+	<!-- 별칭 달아주기 매번 전체 경로명 작성이 번거로워 별칭달아서 사용하기 위함.-->
+	<typeAliases>
+		<typeAlias type="member.model.dto.MemberDTO" alias="memberDTO"/>
+		<typeAlias type="report.model.dto.ReportDTO" alias="reportDTO"/>
+		<typeAlias type="map.model.dto.LatLngDTO" alias="latLngDTO"/>
+		<typeAlias type="map.model.dto.MapBoardDTO" alias="mapboardDTO"/>
+		<typeAlias type="csboard.model.dto.CsBoardDTO" alias="csboardDTO"/>
+		<typeAlias type="admin.model.dto.ReportDTO" alias="AreportDTO"/>
+		<typeAlias type="board.model.dto.BoardDTO" alias="boardDTO"/>
+		<typeAlias type="board.model.dto.ImgDTO" alias="imgDTO"/>
+		<typeAlias type="member.model.dto.BlackDTO" alias="blackDTO"/>
+	</typeAliases>
+
+	<mappers>
+		<mapper resource="/sql/memberSQL.xml"/>
+		<mapper resource="/sql/reportSQL.xml"/>
+		<mapper resource="/sql/mapSQL.xml"/>
+		<mapper resource="/sql/board_mapSQL.xml"/>
+		<mapper resource="/sql/csboardSQL.xml"/>
+		<mapper resource="/sql/AdminSQL.xml"/>
+		<mapper resource="/sql/boardSQL.xml"/>
+	</mappers>
+	
+</configuration>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="admin">
+
+	<select id="getMemberCount" resultType="int">
+		select count(*) from member
+	</select>
+	
+	<select id="getMembers" resultType="memberDTO" parameterType="hashmap">
+		<![CDATA[
+			select B.* from (select A.*, rownum r from (select * from member where id not in 'admin' order by warning desc, reg desc)A order by warning desc, reg desc)B where r >= #{start} and r<=#{end} order by warning desc, reg desc
+		]]>
+	</select>
+	
+	<select id="getSearchCnt" parameterType="hashmap" resultType="int">
+		select count(*) from member
+		<trim prefix="where">
+			<if test="search=='all'">
+				id like '%'||#{keyword}||'%' or email like '%'||#{keyword}||'%' or tel like '%'||#{keyword}||'%' or name like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='name'">
+				name like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='id'">
+				id like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='email'">
+				email like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='tel'">
+				tel like '%'||#{keyword}||'%'
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getSearchMembers" parameterType="hashmap" resultType="memberDTO">
+		<![CDATA[select B.* from (select A.*, rownum r from (select * from member]]>
+		<trim prefix="where">
+			<if test="search=='all'">
+				id like '%'||#{keyword}||'%' or email like '%'||#{keyword}||'%' or tel like '%'||#{keyword}||'%' or name like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='name'">
+				name like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='id'">
+				id like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='email'">
+				email like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='tel'">
+				tel like '%'||#{keyword}||'%'
+			</if>
+		</trim>
+		<![CDATA[order by warning desc, reg desc)A order by warning desc, reg desc)B where r >= #{start} and r<=#{end} order by warning desc, reg desc]]>
+	</select>
+	
+	<select id="getReportsCnt" resultType="int" parameterType="hashmap">
+		select count(*) from
+		(select * from report
+		<trim prefix="where" prefixOverrides="and|or">
+			<if test="sel!=6">
+				sel = #{sel}
+			</if>
+			<if test="status!=2">
+				and status = #{status}
+			</if>
+		</trim>)
+		<trim prefix="where" prefixOverrides="and|or">
+			<if test="search=='all'">
+				writer like '%'||#{keyword}||'%' or id like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='writer'">
+				and writer like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='id'">
+				and id like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='detail'">
+				and detail like '%'||#{keyword}||'%'
+			</if>
+		</trim>
+	</select>
+
+	<select id="getReports" parameterType="hashmap" resultType="AreportDTO">
+		<![CDATA[select B.*, r from 
+		(select A.*, rownum r from 
+		(select * from report ]]>
+		<trim prefix="where" prefixOverrides="and|or">
+			<if test="sel!=6">
+				sel=#{sel} 
+			</if>
+			<if test="status!=2">
+				and status=#{status}
+			</if>
+		</trim>
+		order by status asc)A
+		<trim prefix="where" prefixOverrides="and|or">
+			<if test="search=='all'">
+				and writer like '%'||#{keyword}||'%' or id like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='writer'">
+				and writer like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='id'">
+				and id like '%'||#{keyword}||'%'
+			</if>
+			<if test="search=='detail'">
+				and detail like '%'||#{keyword}||'%'
+			</if>
+		</trim>
+		<![CDATA[ order by reg desc)B 
+		where r>=#{start} and r<=#{end} order by status asc, reg desc]]>
+	</select>
+	
+	<select id="getReportId" parameterType="int" resultType="string">
+		select id from report where report_num=#{num}
+	</select>
+	
+	<!-- report table status 변경 : 공통-->
+	<update id="updateStatus" parameterType="hashmap">
+		update report set status=1, result=#{res} where report_num=#{num}
+	</update>
+	
+	<!-- member table warning, status 변경 -->
+	<update id="updateMember" parameterType="hashmap">
+	<!-- 추방일시 member status 0(추방)으로 변경 -->
+		<if test="res==0">
+			update member set status=#{res} where id=#{id}
+		</if>
+	<!-- 경고일시 member warning + 1 -->
+		<if test="res==1">
+			update member set warning=warning+1 where id=#{id}
+		</if>
+	</update>
+	
+	<!-- 반려시 반려 사유 report에 reason에 데이터 넣기 -->
+	<update id="insertReason" parameterType="hashmap">
+		update report set reason=#{reason} where report_num=#{num}
+	</update>
+	
+	<update id="updateWarns">
+		update member set status=0 where warning>=3
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

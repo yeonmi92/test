@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+  <mapper namespace="board">
+  
+  	<select id="getList" resultType="boardDTO" parameterType="hashmap">
+		select B.* from <![CDATA[ (select A.*, rownum r from (select * from board ]]>
+ 		<if test="sel==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="sel==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="sel==1">
+ 			where sel=1
+ 		</if>
+		order by reg desc
+		<![CDATA[)A)B
+		where r >= #{start} and r <= #{end} order by reg desc ]]>
+  	</select>
+  	
+  	<select id="getNotice" resultType="boardDTO">
+  		select * from board where sel=4 order by reg desc
+  	</select>
+  	
+  	
+  	<select id="getCount" resultType="int" parameterType="int">
+  		select count(*) from board 
+  		<if test="value==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="value==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="value==1">
+ 			where sel=1
+ 		</if>
+  	</select>
+  	
+  	<insert id="insertArticle" parameterType="boardDTO">
+  		insert into board (board_num, sel, id, title, detail) values(board_seq.nextVal, #{sel}, #{id}, #{title}, #{detail})
+  	</insert>
+  	
+	<select id="getArticle" parameterType="int" resultType="boardDTO">
+		select * from board where board_num=#{num}
+	</select>
+	
+	<update id="addReadcount" parameterType="int">
+		update board set readcount = readcount +1 where board_num=#{num}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		delete from board where board_num=#{num}
+	</delete>
+	
+	<update id="updateArticle" parameterType="boardDTO">
+		update board set title=#{title}, detail=#{detail}, sel=#{sel} where board_num=#{board_num}
+	</update>
+	
+	<select id="searchList" parameterType="hashmap" resultType="boardDTO">
+	
+		select B.* from <![CDATA[ (select A.*, rownum r from (select * from board ]]>
+		<choose>
+			<when test='search.equals("all")'>
+				 where id like '%'||#{keyword}||'%' or title like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</when>
+			<when test='search.equals("tide")'>
+				where title like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</when>
+			<when test='search.equals("id")'>
+				where id like '%'||#{keyword}||'%'
+			</when>
+ 		</choose>
+ 		<![CDATA[order by reg desc)A ]]>
+		<if test="sel==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="sel==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="sel==1">
+ 			where sel=1
+ 		</if>
+		<![CDATA[)B where r >= #{start} and r <= #{end} order by reg desc ]]>
+	</select>
+	
+	<select id="searchCnt" parameterType="hashmap" resultType="int">
+	
+		<![CDATA[select count(*) from (select * from board]]>
+		<choose>
+			<when test='search.equals("all")'>
+				 where id like '%'||#{keyword}||'%' or title like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</when>
+			<when test='search.equals("tide")'>
+				where title like '%'||#{keyword}||'%' or detail like '%'||#{keyword}||'%'
+			</when>
+			<when test='search.equals("id")'>
+				where id like '%'||#{keyword}||'%'
+			</when>
+ 		</choose>
+ 		<![CDATA[)]]>
+		<if test="sel==2">
+ 			where sel=0 or sel=1
+ 		</if>
+ 		<if test="sel==0">
+ 			where sel=0
+ 		</if>
+ 		<if test="sel==1">
+ 			where sel=1
+ 		</if>
+	</select>
+	
+	<insert id="writeReply" parameterType="hashmap">
+		insert into board(board_num, sel, id, title, detail, ref) values(board_seq.nextVal, 3, #{id}, '[답글]', #{replyText}, #{board_num})
+	</insert>
+	
+	<select id="getReplies" parameterType="int" resultType="BoardDTO">
+		select * from board where ref=#{num} order by reg desc
+	</select>
+  </mapper>
+
+  
